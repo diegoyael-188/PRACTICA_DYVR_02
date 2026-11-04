@@ -1,0 +1,4 @@
+<resources>
+    <dimen name="gutter">48dp</dimen>
+    <integer name="columnas">2</integer>
+</resources>

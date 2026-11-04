@@ -19,6 +19,9 @@ public interface LibroDao {
     @Query("SELECT * FROM favoritos ORDER BY titulo")
     List<LibroEntity> todos();
 
+    @Query("SELECT id FROM favoritos")
+    List<Long> ids();
+
     @Query("SELECT * FROM favoritos WHERE id = :id")
     LibroEntity porId(long id);
 

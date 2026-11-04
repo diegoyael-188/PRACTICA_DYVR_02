@@ -1,5 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Paleta "book brown + page amber". Los mismos nombres se redefinen en values-night. -->
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="primary">#92400E</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="primary_container">#FDE7C2</color>
+    <color name="on_primary_container">#3B1A04</color>
+    <color name="secondary">#78716C</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="secondary_container">#EDE6DF</color>
+    <color name="on_secondary_container">#292524</color>
+    <color name="background">#FFFBEB</color>
+    <color name="on_background">#1C1917</color>
+    <color name="surface">#FFFBEB</color>
+    <color name="surface_container">#FFFFFF</color>
+    <color name="on_surface">#1C1917</color>
+    <color name="on_surface_variant">#57534E</color>
+    <color name="outline">#D6D3D1</color>
+    <color name="error">#B91C1C</color>
+    <color name="favorito">#DC2626</color>
+    <color name="disponible_bg">#DCFCE7</color>
+    <color name="disponible_fg">#166534</color>
+    <color name="no_disponible_bg">#FEE2E2</color>
+    <color name="no_disponible_fg">#991B1B</color>
 </resources>

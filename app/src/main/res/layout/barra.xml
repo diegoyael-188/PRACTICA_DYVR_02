@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Barra superior compartida: volver, título y acción opcional de actualizar. -->
+<com.google.android.material.appbar.MaterialToolbar xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/barra"
+    android:layout_width="match_parent"
+    android:layout_height="?attr/actionBarSize"
+    app:navigationContentDescription="Volver"
+    app:navigationIcon="@drawable/ic_arrow_back"
+    app:titleTextAppearance="@style/TituloBarra">
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/actualizar"
+        style="@style/Widget.Material3.Button.IconButton"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="end"
+        android:layout_marginEnd="8dp"
+        android:contentDescription="Actualizar catálogo"
+        android:visibility="gone"
+        app:icon="@drawable/ic_refresh" />
+</com.google.android.material.appbar.MaterialToolbar>

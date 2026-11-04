@@ -1,7 +1,7 @@
 package com.example.practica_dyvr_02.ui;
 
 import android.os.Bundle;
-import android.widget.Button;
+import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -9,10 +9,13 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.practica_dyvr_02.R;
+import com.example.practica_dyvr_02.adapters.LibroAdapter;
 import com.example.practica_dyvr_02.api.LibroApi;
 import com.example.practica_dyvr_02.db.AppDatabase;
 import com.example.practica_dyvr_02.db.LibroDao;
 import com.example.practica_dyvr_02.models.LibroEntity;
+import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.button.MaterialButton;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -22,21 +25,20 @@ public class DetalleActivity extends AppCompatActivity {
     private LibroDao dao;
     private LibroEntity libro;
     private boolean esFavorito;
-    private TextView info;
-    private Button boton;
+    private MaterialButton boton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detalle);
         dao = AppDatabase.dao(this);
-        info = findViewById(R.id.info);
+        MaterialToolbar barra = findViewById(R.id.barra);
+        barra.setTitle("Detalle");
+        barra.setNavigationOnClickListener(v -> finish());
         boton = findViewById(R.id.favorito);
-        boton.setEnabled(false);
         boton.setOnClickListener(v -> alternarFavorito());
 
         long id = getIntent().getLongExtra("id", -1);
-        info.setText("Cargando...");
         LibroApi.INSTANCE.detalle(id).enqueue(new Callback<LibroEntity>() {
             @Override
             public void onResponse(@NonNull Call<LibroEntity> call, @NonNull Response<LibroEntity> r) {
@@ -55,7 +57,7 @@ public class DetalleActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(@NonNull Call<LibroEntity> call, @NonNull Throwable t) {
-                toast("Sin conexión: mostrando copia local si existe");
+                toast("Sin conexión: mostrando la copia guardada");
                 cargarLocal(id);
             }
         });
@@ -65,8 +67,14 @@ public class DetalleActivity extends AppCompatActivity {
         AppDatabase.IO.execute(() -> {
             LibroEntity local = dao.porId(id);
             runOnUiThread(() -> {
-                if (local != null) mostrar(local, true);
-                else info.setText("No se pudo cargar el libro.");
+                if (local != null) {
+                    mostrar(local, true);
+                } else {
+                    findViewById(R.id.progreso).setVisibility(View.GONE);
+                    TextView estado = findViewById(R.id.estado);
+                    estado.setText("No se pudo cargar el libro. Revisa tu conexión e inténtalo de nuevo.");
+                    estado.setVisibility(View.VISIBLE);
+                }
             });
         });
     }
@@ -74,14 +82,17 @@ public class DetalleActivity extends AppCompatActivity {
     private void mostrar(LibroEntity l, boolean fav) {
         libro = l;
         esFavorito = fav;
-        info.setText("ID: " + l.id
-                + "\n\nTítulo: " + l.titulo
-                + "\n\nAutor: " + l.autor
-                + "\n\nEditorial: " + l.editorial
-                + "\n\nPáginas: " + l.paginas
-                + "\n\nDisponibilidad: " + (l.disponible ? "Disponible" : "No disponible")
-                + "\n\nFavorito: " + (fav ? "Sí" : "No"));
+        findViewById(R.id.progreso).setVisibility(View.GONE);
+        findViewById(R.id.contenido).setVisibility(View.VISIBLE);
+        ((TextView) findViewById(R.id.titulo)).setText(l.titulo);
+        ((TextView) findViewById(R.id.autor)).setText(l.autor);
+        LibroAdapter.pintarDisponible(findViewById(R.id.disponible), l.disponible);
+        ((TextView) findViewById(R.id.datos)).setText("ID: " + l.id
+                + "\nEditorial: " + l.editorial
+                + "\nPáginas: " + l.paginas
+                + "\nFavorito: " + (fav ? "Sí" : "No"));
         boton.setText(fav ? "Quitar de favoritos" : "Agregar a favoritos");
+        boton.setIconResource(fav ? R.drawable.ic_favorite_filled : R.drawable.ic_favorite);
         boton.setEnabled(true);
     }
 

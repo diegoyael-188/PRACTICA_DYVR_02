@@ -8,7 +8,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.practica_dyvr_02.R;
@@ -17,8 +17,11 @@ import com.example.practica_dyvr_02.api.LibroApi;
 import com.example.practica_dyvr_02.db.AppDatabase;
 import com.example.practica_dyvr_02.db.LibroDao;
 import com.example.practica_dyvr_02.models.LibroEntity;
+import com.google.android.material.appbar.MaterialToolbar;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -30,6 +33,8 @@ public class ListaActivity extends AppCompatActivity {
     private LibroAdapter adapter;
     private LibroDao dao;
     private TextView estado;
+    private View progreso;
+    private Set<Long> marcados = new HashSet<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,14 +43,19 @@ public class ListaActivity extends AppCompatActivity {
         favoritos = getIntent().getBooleanExtra("favoritos", false);
         dao = AppDatabase.dao(this);
         estado = findViewById(R.id.estado);
+        progreso = findViewById(R.id.progreso);
         getSharedPreferences(MainActivity.PREFS, MODE_PRIVATE).edit()
                 .putString("ultima", favoritos ? "favoritos" : "catalogo").apply();
 
-        ((TextView) findViewById(R.id.titulo)).setText(favoritos ? "Favoritos (offline)" : "Catálogo de libros");
-        adapter = new LibroAdapter(favoritos ? "Eliminar" : "★ Favorito", this::verDetalle,
-                favoritos ? this::eliminar : this::agregar);
+        MaterialToolbar barra = findViewById(R.id.barra);
+        barra.setTitle(favoritos ? "Mis favoritos" : "Catálogo");
+        barra.setNavigationOnClickListener(v -> finish());
+
+        adapter = favoritos
+                ? new LibroAdapter(R.drawable.ic_delete, "Eliminar de favoritos", this::verDetalle, this::eliminar)
+                : new LibroAdapter(R.drawable.ic_favorite, "Agregar a favoritos", this::verDetalle, this::alternarFavorito);
         RecyclerView lista = findViewById(R.id.lista);
-        lista.setLayoutManager(new LinearLayoutManager(this));
+        lista.setLayoutManager(new GridLayoutManager(this, getResources().getInteger(R.integer.columnas)));
         lista.setAdapter(adapter);
 
         View actualizar = findViewById(R.id.actualizar);
@@ -57,26 +67,41 @@ public class ListaActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (favoritos) cargarFavoritos(); // refresca si se quitó un favorito desde el detalle
+        // refresca lo que pudo cambiar desde el detalle
+        if (favoritos) cargarFavoritos();
+        else cargarMarcados();
+    }
+
+    private void cargarMarcados() {
+        AppDatabase.IO.execute(() -> {
+            Set<Long> ids = new HashSet<>(dao.ids());
+            runOnUiThread(() -> {
+                marcados = ids;
+                adapter.setMarcados(ids);
+            });
+        });
     }
 
     private void cargarCatalogo() {
-        estado.setText("Cargando...");
+        estado.setText("Cargando catálogo…");
+        progreso.setVisibility(View.VISIBLE);
         LibroApi.INSTANCE.catalogo().enqueue(new Callback<LibroApi.Catalogo>() {
             @Override
             public void onResponse(@NonNull Call<LibroApi.Catalogo> call, @NonNull Response<LibroApi.Catalogo> r) {
+                progreso.setVisibility(View.GONE);
                 if (r.isSuccessful() && r.body() != null && r.body().embedded != null) {
                     mostrar(r.body().embedded.libroDtoList);
                 } else {
-                    estado.setText("");
-                    toast("Error del servidor (" + r.code() + ")");
+                    estado.setText("El servidor no respondió como esperábamos.");
+                    toast("Error del servidor (" + r.code() + "). Intenta de nuevo más tarde.");
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<LibroApi.Catalogo> call, @NonNull Throwable t) {
-                estado.setText("Sin conexión. Pulsa Actualizar para reintentar.");
-                toast("Error de conexión: " + t.getMessage());
+                progreso.setVisibility(View.GONE);
+                estado.setText("Sin conexión. Toca actualizar para reintentar o revisa tus favoritos.");
+                toast("No se pudo conectar al servidor. Revisa tu conexión a Internet.");
             }
         });
     }
@@ -90,13 +115,18 @@ public class ListaActivity extends AppCompatActivity {
 
     private void mostrar(List<LibroEntity> libros) {
         adapter.setLibros(libros);
-        estado.setText(libros.isEmpty() ? "No hay libros." : libros.size() + " libros");
+        estado.setText(libros.isEmpty()
+                ? (favoritos ? "Aún no tienes favoritos. Agrégalos desde el catálogo." : "No hay libros.")
+                : libros.size() + (libros.size() == 1 ? " libro" : " libros"));
     }
 
-    private void agregar(LibroEntity libro) {
+    private void alternarFavorito(LibroEntity libro) {
+        boolean quitar = marcados.contains(libro.id);
         AppDatabase.IO.execute(() -> {
-            dao.insertar(libro);
-            runOnUiThread(() -> toast("Agregado a favoritos: " + libro.titulo));
+            if (quitar) dao.eliminar(libro);
+            else dao.insertar(libro);
+            runOnUiThread(() -> toast(quitar ? "Eliminado de favoritos" : "Agregado a favoritos: " + libro.titulo));
+            cargarMarcados();
         });
     }
 
