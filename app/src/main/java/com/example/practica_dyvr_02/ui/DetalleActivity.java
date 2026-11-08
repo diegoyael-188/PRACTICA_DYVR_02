@@ -3,7 +3,6 @@ package com.example.practica_dyvr_02.ui;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -106,6 +105,6 @@ public class DetalleActivity extends AppCompatActivity {
     }
 
     private void toast(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        ListaActivity.toast(this, msg);
     }
 }

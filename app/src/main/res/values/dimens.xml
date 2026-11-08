@@ -1,4 +1,3 @@
 <resources>
     <dimen name="gutter">16dp</dimen>
-    <integer name="columnas">1</integer>
 </resources>

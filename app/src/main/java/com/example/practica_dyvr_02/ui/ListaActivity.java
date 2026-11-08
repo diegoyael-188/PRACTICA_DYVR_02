@@ -8,7 +8,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.practica_dyvr_02.R;
@@ -52,10 +52,10 @@ public class ListaActivity extends AppCompatActivity {
         barra.setNavigationOnClickListener(v -> finish());
 
         adapter = favoritos
-                ? new LibroAdapter(R.drawable.ic_delete, "Eliminar de favoritos", this::verDetalle, this::eliminar)
+                ? new LibroAdapter(R.drawable.ic_delete, "Eliminar de favoritos", this::verDetalle, this::alternarFavorito)
                 : new LibroAdapter(R.drawable.ic_favorite, "Agregar a favoritos", this::verDetalle, this::alternarFavorito);
         RecyclerView lista = findViewById(R.id.lista);
-        lista.setLayoutManager(new GridLayoutManager(this, getResources().getInteger(R.integer.columnas)));
+        lista.setLayoutManager(new LinearLayoutManager(this));
         lista.setAdapter(adapter);
 
         View actualizar = findViewById(R.id.actualizar);
@@ -67,7 +67,10 @@ public class ListaActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // refresca lo que pudo cambiar desde el detalle
+        refrescar(); // lo que pudo cambiar desde el detalle
+    }
+
+    private void refrescar() {
         if (favoritos) cargarFavoritos();
         else cargarMarcados();
     }
@@ -121,20 +124,12 @@ public class ListaActivity extends AppCompatActivity {
     }
 
     private void alternarFavorito(LibroEntity libro) {
-        boolean quitar = marcados.contains(libro.id);
+        boolean quitar = favoritos || marcados.contains(libro.id);
         AppDatabase.IO.execute(() -> {
             if (quitar) dao.eliminar(libro);
             else dao.insertar(libro);
             runOnUiThread(() -> toast(quitar ? "Eliminado de favoritos" : "Agregado a favoritos: " + libro.titulo));
-            cargarMarcados();
-        });
-    }
-
-    private void eliminar(LibroEntity libro) {
-        AppDatabase.IO.execute(() -> {
-            dao.eliminar(libro);
-            runOnUiThread(() -> toast("Eliminado de favoritos"));
-            cargarFavoritos();
+            refrescar();
         });
     }
 
@@ -142,7 +137,16 @@ public class ListaActivity extends AppCompatActivity {
         startActivity(new Intent(this, DetalleActivity.class).putExtra("id", libro.id));
     }
 
+    private static Toast actual;
+
+    // Cancela el toast visible y muestra el más reciente (compartido entre pantallas).
+    static void toast(android.content.Context ctx, String msg) {
+        if (actual != null) actual.cancel();
+        actual = Toast.makeText(ctx.getApplicationContext(), msg, Toast.LENGTH_SHORT);
+        actual.show();
+    }
+
     private void toast(String msg) {
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+        toast(this, msg);
     }
 }

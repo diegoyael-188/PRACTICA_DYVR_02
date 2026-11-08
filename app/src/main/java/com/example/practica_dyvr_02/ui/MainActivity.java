@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void contarFavoritos() {
         AppDatabase.IO.execute(() -> {
-            int total = AppDatabase.dao(this).todos().size();
+            int total = AppDatabase.dao(this).ids().size();
             runOnUiThread(() -> ((TextView) findViewById(R.id.totalFavoritos)).setText(
                     total == 0 ? "Disponibles sin conexión"
                             : total + (total == 1 ? " guardado" : " guardados") + " · sin conexión"));
