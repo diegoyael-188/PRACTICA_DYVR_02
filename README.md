@@ -170,6 +170,6 @@ Contenido real de `shared_prefs/prefs.xml` en el dispositivo: [03_prefs_xml_en_d
 |---|---|---|
 | ![](docs/evidencias/12_room_agregado_a_favoritos.png) | ![](docs/evidencias/13_room_lista_favoritos.png) | ![](docs/evidencias/14_room_favorito_eliminado.png) |
 
-| Wi-Fi desactivado | Favoritos sin conexión | Detalle sin conexión (copia en Room) |
-|---|---|---|
-| ![](docs/evidencias/15_room_modo_sin_red_activado.png) | ![](docs/evidencias/16_room_favoritos_sin_conexion.png) | ![](docs/evidencias/17_room_detalle_offline_copia_guardada.png) |
+| Wi-Fi desactivado | Catálogo sin conexión (aviso) | Favoritos sin conexión | Detalle sin conexión (copia en Room) |
+|---|---|---|---|
+| ![](docs/evidencias/15_room_modo_sin_red_activado.png) | ![](docs/evidencias/15b_room_catalogo_sin_conexion_toast.png) | ![](docs/evidencias/16_room_favoritos_sin_conexion.png) | ![](docs/evidencias/17_room_detalle_offline_copia_guardada.png) |
