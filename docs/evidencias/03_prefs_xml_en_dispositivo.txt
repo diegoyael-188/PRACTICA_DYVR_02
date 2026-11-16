@@ -1,0 +1,10 @@
+Contenido de /data/data/com.example.practica_dyvr_02/shared_prefs/prefs.xml
+leído con: adb shell run-as com.example.practica_dyvr_02 cat shared_prefs/prefs.xml
+(después de cerrar la app a la fuerza y volver a abrirla)
+
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="nombre">Yael</string>
+    <boolean name="oscuro" value="true" />
+    <string name="ultima">catalogo</string>
+</map>
